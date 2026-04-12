@@ -3,7 +3,10 @@
         "strict": true,
         "module": "ESNext",
         "moduleResolution": "bundler",
-        "noEmit": true
+        "noEmit": true,
+        "types": ["node"],
+        "skipLibCheck": true,
+        "target": "ES2020"
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules", "dist"]
