@@ -4,10 +4,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": ["business-central", "al-language", "dynamics-365", "cli", "developer-tools", "scaffold"],
+  "author": "omar-abdul",
+  "license": "MIT",
+  "description": "CLI tool for Business Central AL developers — scaffold objects, auto-assign IDs, and index AL projects",
   "devDependencies": {
     "@biomejs/biome": "2.4.10",
     "@types/node": "^25.5.0",

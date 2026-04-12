@@ -37,9 +37,10 @@ export function createObject(dir: string, objectType: ObjectType, name: string) 
     const idArrays = Object.keys(availableObjects).map(Number);
     let objectId: number;
     if (idArrays.length > 0) {
-        objectId = Math.max(...idArrays);
+        objectId = Math.max(...idArrays) + 1;
+    } else {
+        objectId = idRanges[0].from;
     }
-    objectId = idRanges.from;
     const defaultPublisher = getPublisher();
     const content = objectTemplate(objectId, titleCaseName, defaultPublisher);
     const filename = `${titleCaseName}-${objectId}.${titleCaseObjectType.toLowerCase()}.al`;

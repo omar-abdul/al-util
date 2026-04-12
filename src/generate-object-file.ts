@@ -213,7 +213,7 @@ export function generateObjectJson(srcDir: string, outputFile = 'objects.json') 
                 const type = `${object.type}s`;
                 if (object.id === null) {
                     skippedCount++;
-                    return;
+                    continue;
                 } else {
                     (objects as Objects)[type as keyof Objects][object.id] = object.name;
                     processedCount++;

@@ -36,12 +36,12 @@ yarn global add al-util
 
 ## Commands
 
-### `create-object`
+### `create`
 
 Scaffolds a new AL object file of a given type, assigns it the next available ID from your `app.json` ID ranges, and places it in the appropriate subdirectory.
 
 ```bash
-npx al-util create-object
+npx al-util create --object-type <type> --name <name>
 ```
 
 **Supported object types:**
@@ -97,12 +97,12 @@ table 50001 "Customer Ledger"
 
 ---
 
-### `generate-objects` *(coming soon)*
+### `generate`
 
-Scans all `.al` files in your project and generates an `objects.json` file that maps every object type to its ID and name. This file is used internally by `create-object` to track used IDs and prevent conflicts.
+Scans all `.al` files in your project and generates an `objects.json` file that maps every object type to its ID and name. This file is used internally by `create` to track used IDs and prevent conflicts.
 
 ```bash
-npx al-util generate-objects
+npx al-util generate
 ```
 
 **Example `objects.json` output:**
@@ -145,8 +145,8 @@ A minimal `app.json` looks like:
 ## How It Works
 
 1. **`app.json`** — `al-util` reads your publisher and ID ranges from here.
-2. **`objects.json`** — tracks all existing object IDs by scanning your `.al` files. Run `generate-objects` to create or refresh it.
-3. **`create-object`** — uses the above to assign the next available ID, generate a boilerplate `.al` file, and save it to the right folder.
+2. **`objects.json`** — tracks all existing object IDs by scanning your `.al` files. Run `generate` to create or refresh it.
+3. **`create`** — uses the above to assign the next available ID, generate a boilerplate `.al` file, and save it to the right folder.
 
 ---
 
