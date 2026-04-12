@@ -3,28 +3,16 @@ import * as path from 'node:path';
 import chalk from 'chalk';
 
 import { OBJECT_TEMPLATES } from './object-templates';
+import { getPublisher, toTitleCase } from './util';
 
 
-export function isALProjectInitialized() {
-    const rootDir = process.cwd()
-    return fs.existsSync(path.join(rootDir, 'app.json'));
-}
 
-export function isObjectFileGenerated() {
-    const rootDir = process.cwd();
-    return fs.existsSync(path.join(rootDir, 'objects.json'));
-}
-function getPublisher() {
-    const rootDir = process.cwd();
-    const appJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'app.json'), 'utf8'));
-    return appJson.publisher;
-}
 
 type ObjectType = keyof typeof OBJECT_TEMPLATES;
 type ParsedObject = Record<ObjectType, Record<number, string>>
 
 
-export function createObject(dir: string = "./", objectType: ObjectType, name: string) {
+export function createObject(dir: string, objectType: ObjectType, name: string) {
     const rootDir = process.cwd();
     const parsed: ParsedObject = JSON.parse(fs.readFileSync(path.join(rootDir, 'objects.json'), 'utf8'));
     const appJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'app.json'), 'utf-8'));
@@ -51,10 +39,10 @@ export function createObject(dir: string = "./", objectType: ObjectType, name: s
     if (idArrays.length > 0) {
         objectId = Math.max(...idArrays);
     }
-    objectId = idRanges.from + 1;
+    objectId = idRanges.from;
     const defaultPublisher = getPublisher();
     const content = objectTemplate(objectId, titleCaseName, defaultPublisher);
-    const filename = titleCaseName === "Default" ? `${titleCaseObjectType}-${objectId}.al` : `${titleCaseName}-${titleCaseObjectType}-${objectId}.al`;
+    const filename = `${titleCaseName}-${objectId}.${titleCaseObjectType.toLowerCase()}.al`;
     const finalDir = path.join(dir, titleCaseObjectType);
     if (!fs.existsSync(finalDir)) {
         fs.mkdirSync(finalDir, { recursive: true });
@@ -91,10 +79,3 @@ function generateTemplate(dir: string, filename: string, content: string) {
 }
 
 // Convert name and objectType to Title Case
-function toTitleCase(str: string) {
-    return str
-        .toLowerCase()
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-}

@@ -183,7 +183,7 @@ function extractObjectInfo(content: string) {
  * 
  */
 
-export function generateObjectJson(srcDir = 'src', outputFile = 'objects.json') {
+export function generateObjectJson(srcDir: string, outputFile = 'objects.json') {
     const alFiles = findAlFiles(srcDir);
     let processedCount = 0;
     let skippedCount = 0;
