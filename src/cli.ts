@@ -13,10 +13,15 @@ program
     .version('0.0.1');
 program
     .command('create')
-    .option('-t, --object-type <object-type>', "The type of object to create")
+    .argument('<object-type>', "The type of object to create")
     .option('-n, --name <name>', "The name of the object")
     .option('-d, --directory <directory>', "The directory to create the object in")
-    .action(({ objectType, name, directory }) => {
+    .option('-e, --extends [extends]', "The object to extend")
+    .action((objectType, { name, directory, extends: ex }) => {
+        const extendedObjects = ['tableextension', 'pageextension', 'reportextension', 'enumextension'];
+        if (extendedObjects.includes(objectType) && !ex) {
+            program.error(chalk.red('An extended object must specify an object to extend. Example: al-util create tableextension --extends "Customer"'));
+        }
         const rootDir = process.cwd();
         const dir = directory ? path.resolve(rootDir, directory) : rootDir;
         if (!objectType) {
