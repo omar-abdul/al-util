@@ -1,12 +1,19 @@
 {
   "name": "al-util",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsup",
     "dev": "tsup --watch"
   },
-  "keywords": ["business-central", "al-language", "dynamics-365", "cli", "developer-tools", "scaffold"],
+  "keywords": [
+    "business-central",
+    "al-language",
+    "dynamics-365",
+    "cli",
+    "developer-tools",
+    "scaffold"
+  ],
   "author": "omar-abdul",
   "license": "MIT",
   "description": "CLI tool for Business Central AL developers — scaffold objects, auto-assign IDs, and index AL projects",

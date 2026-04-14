@@ -1,2 +1,4 @@
 onlyBuiltDependencies:
   - esbuild
+overrides:
+  global: link:C:/Users/ilbuu/AppData/Local/pnpm/global/5/node_modules/global

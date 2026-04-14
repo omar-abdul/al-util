@@ -52,7 +52,7 @@ program
         }
 
 
-        createObject(dir, objectType, name);
+        createObject(dir, objectType, name, ex);
     });
 
 program
