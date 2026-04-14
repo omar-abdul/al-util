@@ -13,6 +13,7 @@ program
     .version('0.0.1');
 program
     .command('create')
+    .description('Scaffold a new AL object (table, page, codeunit, extension, etc.) in your project with the proper template and object ID.')
     .argument('<object-type>', "The type of object to create")
     .option('-n, --name <name>', "The name of the object")
     .option('-d, --directory <directory>', "The directory to create the object in")
