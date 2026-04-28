@@ -6,12 +6,15 @@ export function isALProjectInitialized() {
     return fs.existsSync(path.join(rootDir, 'app.json'));
 }
 
-export function isObjectFileGenerated() {
-    const rootDir = process.cwd();
+export function isALProjectInitializedIn(rootDir: string) {
+    return fs.existsSync(path.join(rootDir, 'app.json'));
+}
+
+export function isObjectFileGenerated(rootDir = process.cwd()) {
     return fs.existsSync(path.join(rootDir, 'objects.json'));
 }
-export function getPublisher() {
-    const rootDir = process.cwd();
+
+export function getPublisher(rootDir = process.cwd()) {
     const appJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'app.json'), 'utf8'));
     return appJson.publisher;
 }

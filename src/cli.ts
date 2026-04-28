@@ -4,7 +4,7 @@ import path from 'node:path';
 import { createObject } from './create-objects';
 import { generateObjectJson } from './generate-object-file';
 import { OBJECT_TEMPLATES } from './object-templates';
-import { isALProjectInitialized, isObjectFileGenerated, toTitleCase } from './util';
+import { isALProjectInitializedIn, isObjectFileGenerated, toTitleCase } from './util';
 
 const program = new Command();
 program
@@ -16,15 +16,17 @@ program
     .description('Scaffold a new AL object (table, page, codeunit, extension, etc.) in your project with the proper template and object ID.')
     .argument('<object-type>', "The type of object to create")
     .option('-n, --name <name>', "The name of the object")
+    .option('-a, --app-dir <appDir>', "AL app directory to use for app.json and objects.json")
     .option('-d, --directory <directory>', "The directory to create the object in")
     .option('-e, --extends [extends]', "The object to extend")
-    .action((objectType, { name, directory, extends: ex }) => {
+    .action((objectType, { name, appDir, directory, extends: ex }) => {
         const extendedObjects = ['tableextension', 'pageextension', 'reportextension', 'enumextension'];
         if (extendedObjects.includes(objectType) && !ex) {
             program.error(chalk.red('An extended object must specify an object to extend. Example: al-util create tableextension --extends "Customer"'));
         }
-        const rootDir = process.cwd();
-        const dir = directory ? path.resolve(rootDir, directory) : rootDir;
+        const cwd = process.cwd();
+        const projectDir = appDir ? path.resolve(cwd, appDir) : cwd;
+        const dir = directory ? path.resolve(projectDir, directory) : projectDir;
         if (!objectType) {
             const types = Object.keys(OBJECT_TEMPLATES)
                 .map((key) => `  - ${toTitleCase(key)}`)
@@ -41,29 +43,31 @@ program
 
         }
 
-        if (!isObjectFileGenerated()) {
-            if (!isALProjectInitialized()) {
-                program.error(chalk.red('AL project is not initialized. Please run `al-util init` to initialize the project.'));
+        if (!isObjectFileGenerated(projectDir)) {
+            if (!isALProjectInitializedIn(projectDir)) {
+                program.error(chalk.red('AL project is not initialized in the selected app directory. Run this command inside an AL app, or pass --app-dir <path-to-app>.'));
 
             }
             console.log(chalk.yellow('Could not find objects.json file. Generating...'));
-            generateObjectJson(rootDir);
+            generateObjectJson(projectDir, path.join(projectDir, 'objects.json'));
 
         }
 
 
-        createObject(dir, objectType, name, ex);
+        createObject(projectDir, dir, objectType, name, ex);
     });
 
 program
     .command('generate')
     .description('Generate the objects.json file from the AL files. By default it will search for the AL files in the current directory.')
+    .option('-a, --app-dir <appDir>', "AL app directory to use for output objects.json")
     .option('-d, --directory [directory]', "The directory to generate the object file in")
-    .action(({ directory }) => {
-        const rootDir = process.cwd();
-        const dir = directory ? path.resolve(rootDir, directory) : rootDir;
+    .action(({ appDir, directory }) => {
+        const cwd = process.cwd();
+        const projectDir = appDir ? path.resolve(cwd, appDir) : cwd;
+        const dir = directory ? path.resolve(projectDir, directory) : projectDir;
 
-        generateObjectJson(dir);
+        generateObjectJson(dir, path.join(projectDir, 'objects.json'));
     });
 
 

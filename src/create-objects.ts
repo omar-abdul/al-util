@@ -26,11 +26,10 @@ const OBJECT_COLLECTION_BY_TYPE: Record<ObjectType, string> = {
 };
 
 
-export function createObject(dir: string, objectType: ObjectType, name: string, extend: string) {
-    const rootDir = process.cwd();
-    const objectsJsonPath = path.join(rootDir, 'objects.json');
-    const parsed: ParsedObject = JSON.parse(fs.readFileSync(path.join(rootDir, 'objects.json'), 'utf8'));
-    const appJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'app.json'), 'utf-8'));
+export function createObject(projectDir: string, dir: string, objectType: ObjectType, name: string, extend: string) {
+    const objectsJsonPath = path.join(projectDir, 'objects.json');
+    const parsed: ParsedObject = JSON.parse(fs.readFileSync(path.join(projectDir, 'objects.json'), 'utf8'));
+    const appJson = JSON.parse(fs.readFileSync(path.join(projectDir, 'app.json'), 'utf-8'));
     const idRanges = appJson.idRanges;
 
 
@@ -59,7 +58,7 @@ export function createObject(dir: string, objectType: ObjectType, name: string, 
     } else {
         objectId = idRanges[0].from;
     }
-    const defaultPublisher = getPublisher().split(" ").join("");
+    const defaultPublisher = getPublisher(projectDir).split(" ").join("");
     const content = objectTemplate(objectId, titleCaseName, defaultPublisher, extend);
     const filename = `${titleCaseName}-${objectId}.${titleCaseObjectType.toLowerCase()}.al`;
     const finalDir = path.join(dir, titleCaseObjectType);
