@@ -4,13 +4,13 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  global: link:C:/Users/ilbuu/AppData/Local/pnpm/global/5/node_modules/global
-
 importers:
 
   .:
     dependencies:
+      al-util:
+        specifier: 'link:'
+        version: 'link:'
       chalk:
         specifier: ^5.6.2
         version: 5.6.2
