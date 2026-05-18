@@ -231,4 +231,10 @@ export const OBJECT_TEMPLATES = {
           }
         }
     }`,
+    interface: (_id: number, name: string, namespace: string) => `namespace ${namespace};
+    
+    interface "${name}"
+    {
+        procedure ProcedureName();
+    }`,
 } as const

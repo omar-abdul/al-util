@@ -10,6 +10,11 @@ import { getPublisher, toTitleCase } from './util';
 
 type ObjectType = keyof typeof OBJECT_TEMPLATES;
 type ParsedObject = Record<string, Record<number, string>>;
+type AppJson = {
+    idRanges?: Array<{ from: number; to: number }>;
+};
+
+const OBJECT_TYPES_WITHOUT_ID = new Set<ObjectType>(['interface']);
 
 const OBJECT_COLLECTION_BY_TYPE: Record<ObjectType, string> = {
     table: 'tables',
@@ -23,14 +28,17 @@ const OBJECT_COLLECTION_BY_TYPE: Record<ObjectType, string> = {
     enum: 'enums',
     enumextension: 'enumextensions',
     query: 'queries',
+    interface: 'interfaces',
 };
 
 
 export function createObject(projectDir: string, dir: string, objectType: ObjectType, name: string, extend: string) {
+    const requiresId = !OBJECT_TYPES_WITHOUT_ID.has(objectType);
     const objectsJsonPath = path.join(projectDir, 'objects.json');
-    const parsed: ParsedObject = JSON.parse(fs.readFileSync(path.join(projectDir, 'objects.json'), 'utf8'));
-    const appJson = JSON.parse(fs.readFileSync(path.join(projectDir, 'app.json'), 'utf-8'));
-    const idRanges = appJson.idRanges;
+    const parsed = parseJsonFile<ParsedObject>(objectsJsonPath);
+    if (!parsed) {
+        return;
+    }
 
 
     const objectTemplate = OBJECT_TEMPLATES[objectType];
@@ -47,20 +55,37 @@ export function createObject(projectDir: string, dir: string, objectType: Object
         }
         return;
     }
-    const collectionKey = OBJECT_COLLECTION_BY_TYPE[objectType];
-    const availableObjects = parsed[collectionKey] ?? {};
-    const idArrays = Object.keys(availableObjects)
-        .map((id) => Number.parseInt(id, 10))
-        .filter((id) => Number.isFinite(id));
-    let objectId: number;
-    if (idArrays.length > 0) {
-        objectId = Math.max(...idArrays) + 1;
-    } else {
-        objectId = idRanges[0].from;
+    let objectId = 0;
+    let collectionKey: string | null = null;
+    let availableObjects: Record<number, string> = {};
+    if (requiresId) {
+        const appJsonPath = path.join(projectDir, 'app.json');
+        const appJson = parseJsonFile<AppJson>(appJsonPath);
+        if (!appJson) {
+            return;
+        }
+        const idRanges = appJson.idRanges;
+        if (!idRanges || idRanges.length === 0 || typeof idRanges[0]?.from !== 'number') {
+            console.error(chalk.red(`Invalid ${appJsonPath}. Expected "idRanges" with at least one numeric "from" value.`));
+            return;
+        }
+
+        collectionKey = OBJECT_COLLECTION_BY_TYPE[objectType];
+        availableObjects = parsed[collectionKey] ?? {};
+        const idArrays = Object.keys(availableObjects)
+            .map((id) => Number.parseInt(id, 10))
+            .filter((id) => Number.isFinite(id));
+        if (idArrays.length > 0) {
+            objectId = Math.max(...idArrays) + 1;
+        } else {
+            objectId = idRanges[0].from;
+        }
     }
     const defaultPublisher = getPublisher(projectDir).split(" ").join("");
     const content = objectTemplate(objectId, titleCaseName, defaultPublisher, extend);
-    const filename = `${titleCaseName}-${objectId}.${titleCaseObjectType.toLowerCase()}.al`;
+    const filename = requiresId
+        ? `${titleCaseName}-${objectId}.${titleCaseObjectType.toLowerCase()}.al`
+        : `${titleCaseName}.${titleCaseObjectType.toLowerCase()}.al`;
     const finalDir = path.join(dir, titleCaseObjectType);
     if (!fs.existsSync(finalDir)) {
         fs.mkdirSync(finalDir, { recursive: true });
@@ -70,12 +95,38 @@ export function createObject(projectDir: string, dir: string, objectType: Object
         return;
     }
 
-    parsed[collectionKey] = availableObjects;
-    parsed[collectionKey][objectId] = titleCaseName;
-    sortObjectCollection(parsed[collectionKey]);
-    fs.writeFileSync(objectsJsonPath, JSON.stringify(parsed, null, 2));
-    console.log(chalk.green(`Updated ${objectsJsonPath} with ${titleCaseObjectType} ${objectId}.`));
+    if (requiresId && collectionKey) {
+        parsed[collectionKey] = availableObjects;
+        parsed[collectionKey][objectId] = titleCaseName;
+        sortObjectCollection(parsed[collectionKey]);
+        fs.writeFileSync(objectsJsonPath, JSON.stringify(parsed, null, 2));
+        console.log(chalk.green(`Updated ${objectsJsonPath} with ${titleCaseObjectType} ${objectId}.`));
+    }
 
+}
+
+function parseJsonFile<T>(filePath: string): T | null {
+    try {
+        const raw = fs.readFileSync(filePath, 'utf8');
+        return JSON.parse(raw) as T;
+    } catch (error) {
+        const err = error as NodeJS.ErrnoException;
+        if (err instanceof SyntaxError) {
+            console.error(chalk.red(`Invalid JSON in ${filePath}.`));
+            console.error(chalk.yellow(err.message));
+            console.error(chalk.yellow('Tip: JSON does not allow trailing commas or comments.'));
+            return null;
+        }
+
+        if (err.code === 'ENOENT') {
+            console.error(chalk.red(`Could not find required file: ${filePath}`));
+            return null;
+        }
+
+        console.error(chalk.red(`Failed to read JSON file: ${filePath}`));
+        console.error(chalk.yellow(err.message));
+        return null;
+    }
 }
 
 function generateTemplate(dir: string, filename: string, content: string) {
